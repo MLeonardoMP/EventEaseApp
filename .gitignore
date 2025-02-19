@@ -1,0 +1,35 @@
+# General VS Code and .NET
+.vscode/
+*.csproj.user
+*.sln.docstates
+*.sln.prefs
+_ReSharper*/
+*/_ReSharper*/
+*.Cache
+*.Patch
+*.bak
+*.tmp
+*.log
+*.suo
+*.user
+*.DS_Store
+
+# .NET specific ignores
+/bin
+/obj
+/packages
+*.nupkg
+/publish
+/TestResults
+
+# Blazor Server specific ignores (if applicable)
+/wwwroot/_framework/*blazor.boot.json
+/wwwroot/_content/*
+
+# VS Code extensions
+.vs/
+
+# Other
+node_modules/
+*.swp
+*.~
