@@ -1,0 +1,55 @@
+@page "/eventlist"
+
+
+@using EventEaseApp.Models
+@using EventEaseApp.Services
+@using navigationManager = Microsoft.AspNetCore.Components.NavigationManager
+@inject navigationManager NavigationManager
+@inject EventService _eventService
+
+<PageTitle>Event List</PageTitle>
+
+<h3>Event List</h3>
+
+@if (events == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Event Name</th>
+                <th>Event Date</th>
+                <th>Event Description</th>
+                <th>Event Location</th>
+                <th>Event Registration</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in events)
+            {
+                <tr>
+                    <td>@item.Name</td>
+                    <td>@item.Date</td>
+                    <td>@item.Description</td>
+                    <td>@item.Location</td>
+                    <td><button @onclick="() => NavigateToRegistration(item.Id)">Register</button></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+@functions {
+    private List<Event>? events;
+    private void NavigateToRegistration(int eventId)
+    {
+        NavigationManager.NavigateTo($"/register/{eventId}");
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        events = await _eventService.GetEvents();
+        StateHasChanged();
+    }
+}

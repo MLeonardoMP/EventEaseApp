@@ -1,0 +1,125 @@
+
+@page "/register/{eventId:int}"
+@using EventEaseApp.Models
+@using EventEaseApp.Services
+@inject EventService _eventService
+@inject NavigationManager NavigationManager
+@inject UserSessionService SessionService
+@implements IDisposable
+
+<PageTitle>Event Registration</PageTitle>
+
+<h3>Event Registration</h3>
+
+@if (currentEvent == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <h4>@currentEvent.Name</h4>
+    <p>@currentEvent.Description</p>
+    <p>@currentEvent.Date</p>
+    <p>@currentEvent.Location</p>
+
+    <div class="d-flex justify-content-center">
+        <div class="w-100" style="max-width: 400px;">
+            <h4 class="text-center">Registration Form</h4>
+            <EditForm Model="@registration" OnSubmit="HandleValidSubmit">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+                <div class="mb-3">
+                    <InputText class="form-control" @bind-Value="registration.Name" placeholder="Name" required />
+                </div>
+                <div class="mb-3">
+                    <InputText class="form-control" @bind-Value="registration.Email" placeholder="Email" required />
+                </div>
+                <div class="mb-3">
+                    <InputText class="form-control" @bind-Value="registration.Phone" placeholder="Phone" required />
+                </div>
+                <div class="text-center">
+                    <button type="submit" class="btn btn-primary" disabled="@(!context.Validate())">Register</button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+
+}
+
+
+@code {
+    private Event? currentEvent;
+    private Registration registration = new Registration();
+    private string sessionId = Guid.NewGuid().ToString();
+
+    [Parameter]
+    public int EventId { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+       try
+        {
+            var SaveRegistrationState = await SessionService.GetRegistrationState(sessionId);
+            if (SaveRegistrationState != null)
+            {
+                registration = SaveRegistrationState;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+         currentEvent = (await _eventService.GetEvents()).FirstOrDefault(e => e.Id == EventId);
+        if (currentEvent == null) 
+        {
+            Console.WriteLine("Event not found."); 
+            NavigationManager.NavigateTo("/eventlist");
+        }
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        if(!isValidRegistration(registration))
+        {
+            return;
+        }
+
+        await SessionService.SaveRegistrationState(sessionId,registration);
+        
+        await Task.Delay(1000);
+
+        var attendance = new Attendance
+        {
+            EventId = currentEvent.Id,
+            RegistrationId = registration.Id,
+            CheckInTime = DateTime.Now,
+            IsPresent = false
+        };
+    
+
+        Console.WriteLine("Registration submitted.");
+        Console.WriteLine($"Name: {registration.Name}");
+        Console.WriteLine($"Email: {registration.Email}");
+        Console.WriteLine($"Phone: {registration.Phone}");
+        NavigationManager.NavigateTo("/eventlist");
+    }
+
+    private bool isValidRegistration(Registration registration)
+    {
+        if (string.IsNullOrWhiteSpace(registration.Name) || string.IsNullOrWhiteSpace(registration.Email) || string.IsNullOrWhiteSpace(registration.Phone))
+        {
+            return false;
+        }
+        return true;
+    }
+
+    public void Dispose()
+    {
+        Console.WriteLine("EventRegistration disposed.");
+    }
+
+}

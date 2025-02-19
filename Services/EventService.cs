@@ -14,10 +14,5 @@ namespace EventEaseApp.Services {
             };
         }
 
-        public async Task<Event> GetEventById(int id) {
-            await Task.Delay(100);
-            return new Event { Id = id, Name = "Tech Conference 2024", Description = "Annual technology conference featuring latest innovations", Location = "Seattle Convention Center", Date = "2024-06-15" };
-        }
-
     }
 }
